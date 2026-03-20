@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>猜人游戏 · AI 主持</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0f0f1a;
+  color: #e8e0d0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+header {
+  text-align: center;
+  padding: 40px 20px 20px;
+  width: 100%;
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+}
+header h1 { font-size: 24px; font-weight: 400; color: #f0d080; letter-spacing: 4px; }
+header p { font-size: 12px; color: #666; margin-top: 6px; letter-spacing: 1px; }
+
+#game {
+  width: 100%;
+  max-width: 520px;
+  padding: 0 20px 60px;
+  flex: 1;
+}
+
+/* ── 开始页 ── */
+#startScreen { text-align: center; padding-top: 60px; }
+#startScreen h2 { font-size: 18px; color: #c8a850; margin-bottom: 16px; font-weight: 400; }
+#startScreen p { font-size: 14px; color: #888; line-height: 2; margin-bottom: 40px; }
+#startBtn {
+  padding: 14px 48px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f0d080, #e8a830);
+  color: #1a1a2e;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#startBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,208,128,0.3); }
+
+/* ── 对话区 ── */
+#chat {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+#chat.show { display: flex; }
+
+.msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.msg.ai {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #e8e0d0;
+  border-bottom-left-radius: 4px;
+}
+.msg.user {
+  align-self: flex-end;
+  background: rgba(240,208,128,0.15);
+  border: 1px solid rgba(240,208,128,0.3);
+  color: #f0d080;
+  border-bottom-right-radius: 4px;
+}
+.msg.system {
+  align-self: center;
+  background: rgba(240,208,128,0.1);
+  border: 1px dashed rgba(240,208,128,0.3);
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  max-width: 90%;
+}
+.msg.result {
+  align-self: center;
+  background: rgba(76,175,80,0.15);
+  border: 1px solid rgba(76,175,80,0.4);
+  color: #6fbf8f;
+  text-align: center;
+  font-size: 14px;
+  max-width: 90%;
+}
+
+/* ── 底部输入 ── */
+#inputArea {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  padding: 16px 20px 24px;
+  background: linear-gradient(0deg, #0f0f1a 80%, transparent);
+}
+#inputArea.show { display: block; }
+#inputRow {
+  display: flex;
+  gap: 10px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+#guessInput {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(240,208,128,0.2);
+  border-radius: 24px;
+  color: #e8e0d0;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+}
+#guessInput::placeholder { color: #555; }
+#guessInput:focus { border-color: rgba(240,208,128,0.5); }
+#sendBtn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f0d080, #e8a830);
+  color: #1a1a2e;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── 加载中 ── */
+.loading {
+  display: inline-block;
+  color: #888;
+  font-size: 14px;
+  padding: 12px 16px;
+  align-self: flex-start;
+}
+.loading::after {
+  content: '...';
+  animation: dots 1s steps(4,end) infinite;
+}
+@keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
+
+/* ── 重新开始 ── */
+#restartBtn {
+  display: none;
+  margin: 20px auto 0;
+  padding: 12px 32px;
+  background: transparent;
+  border: 1px solid rgba(240,208,128,0.3);
+  color: #c8a850;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+#restartBtn.show { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>猜 人 游 戏</h1>
+  <p>AI 出题 · 你来猜</p>
+</header>
+
+<div id="game">
+  <div id="startScreen">
+    <h2>🤔 AI 已想好一个人</h2>
+    <p>通过提问或直接猜人名来揭开答案<br>AI 只能回答"是"或"否"</p>
+    <button id="startBtn" onclick="startGame()">开始挑战</button>
+  </div>
+
+  <div id="chat"></div>
+  <div id="restartBtn" onclick="startGame()">再来一局</div>
+</div>
+
+<div id="inputArea">
+  <div id="inputRow">
+    <input id="guessInput" type="text" placeholder="输入问题或猜测…" onkeydown="if(event.key==='Enter')send()" autocomplete="off">
+    <button id="sendBtn" onclick="send()">发送</button>
+  </div>
+</div>
+
+<script>
+const API = "https://fair-candles-leave.loca.lt";
+
+let sessionId = null;
+let ended = false;
+
+function el(id) { return document.getElementById(id); }
+
+function addMsg(text, type) {
+  const chat = el('chat');
+  const div = document.createElement('div');
+  div.className = 'msg ' + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function setLoading(show) {
+  const existing = document.querySelector('.loading');
+  if (show) {
+    const div = document.createElement('div');
+    div.className = 'msg ai loading';
+    div.id = 'loadingEl';
+    div.textContent = '思考中';
+    el('chat').appendChild(div);
+    el('chat').scrollTop = el('chat').scrollHeight;
+  } else {
+    const el = document.getElementById('loadingEl');
+    if (el) el.remove();
+  }
+  el('sendBtn').disabled = show;
+  el('guessInput').disabled = show;
+}
+
+async function startGame() {
+  el('startScreen').style.display = 'none';
+  el('chat').innerHTML = '';
+  el('chat').classList.add('show');
+  el('inputArea').classList.add('show');
+  el('restartBtn').classList.remove('show');
+  ended = false;
+  sessionId = null;
+  addMsg('游戏即将开始，AI 正在想一个人…', 'system');
+  el('guessInput').focus();
+
+  setLoading(true);
+  try {
+    const resp = await fetch(API + '/new_game', { method: 'POST', headers: {'Content-Type':'application/json'} });
+    const data = await resp.json();
+    setLoading(false);
+    if (data.error) { addMsg('出错了: ' + data.error, 'system'); return; }
+    sessionId = data.session_id;
+    addMsg(data.reply, 'ai');
+  } catch(e) {
+    setLoading(false);
+    addMsg('网络错误，请检查连接: ' + e.message, 'system');
+  }
+}
+
+async function send() {
+  const input = el('guessInput');
+  const text = input.value.trim();
+  if (!text || !sessionId || ended) return;
+  input.value = '';
+  addMsg(text, 'user');
+
+  setLoading(true);
+  try {
+    const resp = await fetch(API + '/guess', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ session_id: sessionId, input: text })
+    });
+    const data = await resp.json();
+    setLoading(false);
+    if (data.error) { addMsg('出错了: ' + data.error, 'system'); return; }
+
+    addMsg(data.reply, 'ai');
+
+    if (data.is_revealed || data.is_correct) {
+      ended = true;
+      setLoading(false);
+      const rating = getRating(data.rounds);
+      addMsg('🎉 ' + rating + ' | 用时 ' + data.rounds + ' 轮', 'result');
+      el('restartBtn').classList.add('show');
+    }
+  } catch(e) {
+    setLoading(false);
+    addMsg('网络错误: ' + e.message, 'system');
+  }
+}
+
+function getRating(rounds) {
+  if (rounds === 1) return 'SSS 天才直觉';
+  if (rounds === 2) return 'SS 学识渊博';
+  if (rounds === 3) return 'S 聪明绝顶';
+  if (rounds <= 5) return 'A 见多识广';
+  if (rounds <= 7) return 'B 推理达人';
+  if (rounds <= 10) return 'C 险中求胜';
+  return 'D 再接再厉';
+}
+</script>
+</body>
+</html>
