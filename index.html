@@ -3,301 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>猜人游戏 · AI 主持</title>
+<title>猜人游戏</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #0f0f1a;
-  color: #e8e0d0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-header {
-  text-align: center;
-  padding: 40px 20px 20px;
-  width: 100%;
-  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
-}
+body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #0f0f1a; color: #e8e0d0; min-height: 100vh; }
+header { text-align: center; padding: 40px 20px 20px; background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%); }
 header h1 { font-size: 24px; font-weight: 400; color: #f0d080; letter-spacing: 4px; }
-header p { font-size: 12px; color: #666; margin-top: 6px; letter-spacing: 1px; }
-
-#game {
-  width: 100%;
-  max-width: 520px;
-  padding: 0 20px 60px;
-  flex: 1;
-}
-
-/* ── 开始页 ── */
+header p { font-size: 12px; color: #666; margin-top: 6px; }
+#game { width: 100%; max-width: 520px; padding: 0 20px 60px; }
 #startScreen { text-align: center; padding-top: 60px; }
-#startScreen h2 { font-size: 18px; color: #c8a850; margin-bottom: 16px; font-weight: 400; }
-#startScreen p { font-size: 14px; color: #888; line-height: 2; margin-bottom: 40px; }
-#startBtn {
-  padding: 14px 48px;
-  font-size: 16px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #f0d080, #e8a830);
-  color: #1a1a2e;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  letter-spacing: 2px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+#startScreen p { font-size: 14px; color: #888; line-height: 2; margin: 20px 0 40px; }
+#startBtn { padding: 14px 48px; font-size: 16px; font-weight: 600; background: linear-gradient(135deg, #f0d080, #e8a830); color: #1a1a2e; border: none; border-radius: 30px; cursor: pointer; letter-spacing: 2px; }
 #startBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(240,208,128,0.3); }
-
-/* ── 对话区 ── */
-#chat {
-  display: none;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-#chat.show { display: flex; }
-
-.msg {
-  max-width: 85%;
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 15px;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  animation: fadeIn 0.3s ease;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-.msg.ai {
-  align-self: flex-start;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #e8e0d0;
-  border-bottom-left-radius: 4px;
-}
-.msg.user {
-  align-self: flex-end;
-  background: rgba(240,208,128,0.15);
-  border: 1px solid rgba(240,208,128,0.3);
-  color: #f0d080;
-  border-bottom-right-radius: 4px;
-}
-.msg.system {
-  align-self: center;
-  background: rgba(240,208,128,0.1);
-  border: 1px dashed rgba(240,208,128,0.3);
-  color: #888;
-  font-size: 13px;
-  text-align: center;
-  max-width: 90%;
-}
-.msg.result {
-  align-self: center;
-  background: rgba(76,175,80,0.15);
-  border: 1px solid rgba(76,175,80,0.4);
-  color: #6fbf8f;
-  text-align: center;
-  font-size: 14px;
-  max-width: 90%;
-}
-
-/* ── 底部输入 ── */
-#inputArea {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0; right: 0;
-  padding: 16px 20px 24px;
-  background: linear-gradient(0deg, #0f0f1a 80%, transparent);
-}
-#inputArea.show { display: block; }
-#inputRow {
-  display: flex;
-  gap: 10px;
-  max-width: 520px;
-  margin: 0 auto;
-}
-#guessInput {
-  flex: 1;
-  padding: 12px 16px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(240,208,128,0.2);
-  border-radius: 24px;
-  color: #e8e0d0;
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-}
-#guessInput::placeholder { color: #555; }
+#gameArea { display: none; }
+#gameArea.show { display: block; }
+.clue-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.clue-num { font-size: 11px; color: #666; margin-bottom: 8px; }
+.clue-text { font-size: 17px; line-height: 1.8; color: #e0d8c8; white-space: pre-wrap; }
+#history { margin-bottom: 16px; }
+.hist-item { padding: 10px 16px; border-radius: 12px; margin-bottom: 6px; font-size: 14px; animation: fadeIn 0.3s ease; white-space: pre-wrap; }
+.hist-item.right { background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); color: #6fbf8f; }
+.hist-item.wrong { background: rgba(255,80,80,0.08); border: 1px solid rgba(255,80,80,0.2); color: #e07070; }
+.hist-item.hint { background: rgba(240,208,128,0.08); border: 1px solid rgba(240,208,128,0.2); color: #c8a850; }
+#inputRow { display: flex; gap: 10px; margin-bottom: 12px; }
+#guessInput { flex: 1; padding: 12px 16px; background: rgba(255,255,255,0.07); border: 1px solid rgba(240,208,128,0.2); border-radius: 24px; color: #e8e0d0; font-size: 15px; font-family: inherit; outline: none; }
 #guessInput:focus { border-color: rgba(240,208,128,0.5); }
-#sendBtn {
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #f0d080, #e8a830);
-  color: #1a1a2e;
-  border: none;
-  border-radius: 24px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-#sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* ── 加载中 ── */
-.loading {
-  display: inline-block;
-  color: #888;
-  font-size: 14px;
-  padding: 12px 16px;
-  align-self: flex-start;
-}
-.loading::after {
-  content: '...';
-  animation: dots 1s steps(4,end) infinite;
-}
-@keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
-
-/* ── 重新开始 ── */
-#restartBtn {
-  display: none;
-  margin: 20px auto 0;
-  padding: 12px 32px;
-  background: transparent;
-  border: 1px solid rgba(240,208,128,0.3);
-  color: #c8a850;
-  border-radius: 20px;
-  font-size: 14px;
-  cursor: pointer;
-}
-#restartBtn.show { display: block; }
+#guessInput::placeholder { color: #555; }
+#sendBtn { padding: 12px 20px; background: linear-gradient(135deg, #f0d080, #e8a830); color: #1a1a2e; border: none; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+#moreClueBtn { width: 100%; padding: 12px; background: transparent; border: 1px solid rgba(240,208,128,0.2); border-radius: 24px; color: #888; font-size: 14px; cursor: pointer; margin-bottom: 16px; }
+#moreClueBtn:hover { border-color: rgba(240,208,128,0.4); color: #c8a850; }
+#resultBox { display: none; text-align: center; padding: 30px; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); border-radius: 16px; margin-top: 20px; }
+#resultBox.show { display: block; animation: fadeIn 0.5s ease; }
+#resultName { font-size: 24px; color: #f0d080; margin-bottom: 8px; }
+#resultIntro { font-size: 14px; color: #888; margin-bottom: 8px; }
+#resultRating { font-size: 16px; color: #6fbf8f; margin-bottom: 20px; }
+#restartBtn { padding: 12px 32px; background: linear-gradient(135deg, #f0d080, #e8a830); color: #1a1a2e; border: none; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
-
 <header>
   <h1>猜 人 游 戏</h1>
-  <p>AI 出题 · 你来猜</p>
+  <p>75位名人 · 你来猜</p>
 </header>
-
 <div id="game">
   <div id="startScreen">
-    <h2>🤔 AI 已想好一个人</h2>
-    <p>通过提问或直接猜人名来揭开答案<br>AI 只能回答"是"或"否"</p>
+    <p>随机选择了一位历史人物或名人<br>通过提问或直接猜人名来揭开答案<br>可以问"是/否"类问题，也可以直接猜</p>
     <button id="startBtn" onclick="startGame()">开始挑战</button>
   </div>
-
-  <div id="chat"></div>
-  <div id="restartBtn" onclick="startGame()">再来一局</div>
-</div>
-
-<div id="inputArea">
-  <div id="inputRow">
-    <input id="guessInput" type="text" placeholder="输入问题或猜测…" onkeydown="if(event.key==='Enter')send()" autocomplete="off">
-    <button id="sendBtn" onclick="send()">发送</button>
+  <div id="gameArea">
+    <div class="clue-box">
+      <div class="clue-num">线索 <span id="clueNum">1</span></div>
+      <div class="clue-text" id="clueText"></div>
+    </div>
+    <div id="history"></div>
+    <button id="moreClueBtn" onclick="moreClue()">要更多线索（+1轮）</button>
+    <div id="inputRow">
+      <input id="guessInput" type="text" placeholder="输入猜测或问题…" onkeydown="if(event.key==='Enter')sendGuess()" autocomplete="off">
+      <button id="sendBtn" onclick="sendGuess()">发送</button>
+    </div>
+  </div>
+  <div id="resultBox">
+    <div id="resultName"></div>
+    <div id="resultIntro"></div>
+    <div id="resultRating"></div>
+    <button id="restartBtn" onclick="startGame()">再来一局</button>
   </div>
 </div>
-
 <script>
-const API = "http://118.196.82.179";
+var PEOPLE = [
+  {name:"秦始皇",intro:"秦朝开国皇帝，统一六国",clues:["他生活在中国古代","他是皇帝","他统一了度量衡","他修建了长城","他焚书坑儒"]},
+  {name:"刘备",intro:"三国蜀汉开国皇帝",clues:["三国时期人物","他是蜀国的皇帝","他以仁德著称","他有关羽和张飞两位结拜兄弟","他三顾茅庐请诸葛亮出山"]},
+  {name:"诸葛亮",intro:"三国蜀汉丞相，杰出政治家、军事家",clues:["三国时期人物","他是一位丞相","他足智多谋","他发明了木牛流马","他是智慧的象征"]},
+  {name:"岳飞",intro:"南宋抗金名将，民族英雄",clues:["他生活在中国古代","他是著名将领","他精忠报国","他被奸臣所害","他的母亲曾为他刺字"]},
+  {name:"屈原",intro:"战国时期楚国诗人",clues:["他是一位诗人","他生活在战国时期","他忧国忧民","他在五月初五投江","为纪念他有了端午节"]},
+  {name:"陶渊明",intro:"东晋田园诗人",clues:["他是一位诗人","他喜欢隐居生活","他不为五斗米折腰","他写《桃花源记》","他被称为田园诗人之祖"]},
+  {name:"苏轼",intro:"北宋文学家、书画家",clues:["他是一位文学家","他是北宋人","他是唐宋八大家之一","他写《水调歌头》","他被流放到黄州"]},
+  {name:"李清照",intro:"宋代女词人",clues:["她是一位词人","她是女性","她生活在中国古代","她与丈夫赵明诚志同道合","她前期词风婉约清丽"]},
+  {name:"曹雪芹",intro:"清代小说家，《红楼梦》作者",clues:["他是清代人","他是一位小说家","他写了《红楼梦》","他出身贵族后家道中落"]},
+  {name:"鲁迅",intro:"中国现代文学家，思想家",clues:["他是中国现代人","他是一位文学家","他弃医从文","他写《狂人日记》","他原名周树人"]},
+  {name:"毛泽东",intro:"中国共产党创始人，新中国缔造者",clues:["他是中国现代人","他是中国共产党领导人","他领导了革命","他是中华人民共和国主席","他曾写过《沁园春·雪》"]},
+  {name:"周恩来",intro:"新中国首任总理",clues:["他是中国现代人","他是著名政治家","他是新中国首任总理","他与毛泽东搭档","他以外交风度著称"]},
+  {name:"邓小平",intro:"中国改革开放总设计师",clues:["他是中国现代人","他是著名政治家","他主导了改革开放","他是中国共产党领导人","他被称为改革开放总设计师"]},
+  {name:"爱因斯坦",intro:"物理学家，相对论创立者",clues:["他是20世纪人","他是著名科学家","他提出了相对论","他获得了诺贝尔物理学奖","他是德裔美国人"]},
+  {name:"牛顿",intro:"英国物理学家，数学家",clues:["他是英国人","他是著名科学家","他发现了万有引力","他提出了三大运动定律","他与苹果有关"]},
+  {name:"居里夫人",intro:"物理学家、化学家，两次获诺贝尔奖",clues:["她是女性","她是著名科学家","她获得了诺贝尔奖","她发现了镭","她被称为镭的母亲"]},
+  {name:"贝多芬",intro:"德国作曲家",clues:["他是音乐家","他是德国人","他失聪后仍坚持创作","他写了《第九交响曲》","他被称为乐圣"]},
+  {name:"达芬奇",intro:"意大利文艺复兴艺术家、科学家",clues:["他是意大利人","他是文艺复兴时期的人","他是一位艺术家","他画《蒙娜丽莎》","他是全才型天才"]},
+  {name:"哥伦布",intro:"意大利航海家，发现美洲大陆",clues:["他是意大利人","他是航海家","他横渡大西洋","他发现了美洲","他在西班牙王室支持下航行"]},
+  {name:"华盛顿",intro:"美国开国总统",clues:["他是美国人","他是美国第一任总统","他领导了独立战争","他被称为国父","他拒绝第三次连任"]},
+  {name:"拿破仑",intro:"法国皇帝，军事家",clues:["他是法国人","他是一位皇帝","他是一位军事天才","他参与了滑铁卢战役","他颁布了《拿破仑法典》"]},
+  {name:"莎士比亚",intro:"英国剧作家、诗人",clues:["他是英国人","他是文艺复兴时期的人","他是剧作家","他写《哈姆雷特》","他被称为戏剧之父"]},
+  {name:"柏拉图",intro:"古希腊哲学家",clues:["他是古希腊人","他是哲学家","他是苏格拉底的学生","他创立了柏拉图学园","他的思想影响西方哲学两千年"]},
+  {name:"亚里士多德",intro:"古希腊哲学家、科学家",clues:["他是古希腊人","他是哲学家","他是柏拉图的学生","他的思想影响西方文明","他创立了逻辑学"]},
+  {name:"成吉思汗",intro:"蒙古帝国创建者",clues:["他是中国古代的帝王","他是蒙古人","他建立了蒙古帝国","他的军队横扫欧亚","他被称为一代天骄"]},
+  {name:"武则天",intro:"中国历史上唯一女皇帝",clues:["她是女性","她是中国古代人","她是唯一的女皇帝","她以则天为号","她开创了殿试制度"]},
+  {name:"郑和",intro:"明代航海家",clues:["他是明代人","他是航海家","他七次下西洋","他比哥伦布早出发","他信仰佛教"]},
+  {name:"张仲景",intro:"东汉医学家，《伤寒杂病论》作者",clues:["他是中国人","他是古代医学家","他被称为医圣","他写《伤寒杂病论》","他发明了饺子"]},
+  {name:"李时珍",intro:"明代医学家，《本草纲目》作者",clues:["他是中国明代人","他是医学家","他写了《本草纲目》","他走遍全国尝百草","他被称为药圣"]},
+  {name:"鉴真",intro:"唐代高僧，日本佛教律宗创始者",clues:["他是唐代人","他是僧人","他东渡日本传法","他历经磨难六次才成功","他为日本带去了佛法"]},
+  {name:"玄奘",intro:"唐代高僧，西游记原型",clues:["他是唐代人","他是僧人","他西行取经","他去了印度","《西游记》以他为原型"]},
+  {name:"花木兰",intro:"古代巾帼英雄",clues:["她是女性","她是中国古代人","她女扮男装代父从军","她的故事流传千年","《木兰辞》记载了她的事"]},
+  {name:"貂蝉",intro:"中国古代四大美女之一",clues:["她是女性","她是中国古代人","她被称为闭月","她与吕布、董卓有关","她是三国时期人物"]},
+  {name:"杨贵妃",intro:"唐代美女，唐玄宗宠妃",clues:["她是女性","她是唐代人","她很美丽","她是唐玄宗的宠妃","她与李白有交集"]},
+  {name:"王昭君",intro:"汉代和亲宫女，四大美女之一",clues:["她是女性","她是汉代人","她被派去和亲","她被称为落雁","她出塞到了匈奴"]},
+  {name:"西施",intro:"春秋时期越国美女",clues:["她是女性","她是春秋时期人","她是越国人","她帮助越国灭掉了吴国","她被称为沉鱼"]},
+  {name:"孙悟空",intro:"《西游记》中的齐天大圣",clues:["他是虚构人物","他从石头里诞生","他会七十二变","他保护唐僧取经","他大闹过天宫"]},
+  {name:"关羽",intro:"三国蜀汉名将，武圣",clues:["他是三国时期人","他是蜀汉将领","他与刘备、张飞是结拜兄弟","他被称为武圣","他后被封为关帝"]},
+  {name:"张飞",intro:"三国蜀汉名将",clues:["他是三国时期人","他是蜀汉将领","他与刘备、关羽是结拜兄弟","他以勇猛著称","他是个粗中有细的人"]},
+  {name:"周瑜",intro:"三国东吴名将",clues:["他是三国时期人","他是东吴的将领","他精通音乐","他与诸葛亮有过合作","他英年早逝"]},
+  {name:"曹操",intro:"三国魏王，政治家、军事家",clues:["他是三国时期人","他是魏国的奠基人","他是著名政治家","他的儿子曹丕建立了魏国","他被称为乱世奸雄"]},
+  {name:"司马迁",intro:"西汉史学家，《史记》作者",clues:["他是西汉人","他是史学家","他写了《史记》","他受了宫刑仍坚持写作","他被称为史圣"]},
+  {name:"孔子",intro:"春秋思想家，儒家创始人",clues:["他是春秋时期人","他是思想家","他创立了儒家学派","他被称为万世师表","他周游列国宣扬学说"]},
+  {name:"孟子",intro:"战国思想家，儒家亚圣",clues:["他是战国时期人","他是思想家","他是孔子的学生","他被称为亚圣","他主张性善论"]},
+  {name:"老子",intro:"道家创始人，《道德经》作者",clues:["他是春秋时期人","他是道家创始人","他写《道德经》","他主张无为而治","他被称为太上老君"]},
+  {name:"庄子",intro:"战国道家代表人物",clues:["他是战国时期人","他是道家代表","他写了《逍遥游》","他主张追求精神自由","他梦到过蝴蝶"]},
+  {name:"韩信",intro:"西汉军事家，兵仙",clues:["他是西汉人","他是著名军事家","他曾受胯下之辱","他帮助刘邦打天下","他被称为兵仙"]},
+  {name:"张良",intro:"西汉谋士",clues:["他是西汉人","他是谋士","他帮助刘邦夺取天下","圯上老人给他兵书","他功成身退"]},
+  {name:"刘邦",intro:"汉朝开国皇帝，汉高祖",clues:["他是中国第一位平民出身的皇帝","他原本是亭长","他打败了项羽建立汉朝","他是汉朝开国皇帝","他以知人善任著称"]},
+  {name:"项羽",intro:"秦末起义领袖，西楚霸王",clues:["他是秦末人","他是著名军事家","他力能扛鼎","他败给了刘邦","他乌江自刎"]},
+  {name:"范蠡",intro:"春秋越国谋士，商圣",clues:["他是春秋时期人","他是越国谋士","他帮助勾践灭吴复国","他功成身退","他后来经商成为商圣"]},
+  {name:"扁鹊",intro:"战国医学家",clues:["他是中国古代医学家","他医术高超","他被称为脉学之祖","他治疗过虢国太子"]},
+  {name:"华佗",intro:"东汉医学家",clues:["他是中国古代医学家","他发明了麻沸散","他被曹操所杀","他被称为外科鼻祖","他五禽戏的创始人"]},
+  {name:"王羲之",intro:"东晋书法家",clues:["他是东晋人","他是书法家","他写《兰亭集序》","他被称为书圣","他爱鹅"]},
+  {name:"杜甫",intro:"唐代诗人，诗圣",clues:["他是唐代诗人","他被称为诗圣","他与李白是好友","他写《三吏》《三别》","他忧国忧民"]},
+  {name:"白居易",intro:"唐代诗人",clues:["他是唐代诗人","他倡导新乐府运动","他写《长恨歌》《琵琶行》","他的诗通俗易懂","他晚年在洛阳度过"]},
+  {name:"杜牧",intro:"唐代诗人",clues:["他是唐代诗人","他写《阿房宫赋》","他与李商隐并称小李杜","他曾在扬州任职","他以七绝著称"]},
+  {name:"李商隐",intro:"唐代诗人",clues:["他是唐代诗人","他的诗深情绵邈","他与杜牧并称小李杜","他的无题诗最为著名","他仕途不顺"]},
+  {name:"曾国藩",intro:"清代名臣，理学家",clues:["他是清代人","他是湘军创建者","他被称为千古完人","他是理学家","他写了很多家书"]},
+  {name:"林则徐",intro:"清代政治家，虎门销烟",clues:["他是清代人","他是著名政治家","他虎门销烟","他被流放新疆","他被称为民族英雄"]},
+  {name:"霍去病",intro:"西汉名将",clues:["他是西汉人","他是著名将领","他大破匈奴","他是卫青的外甥","他24岁英年早逝"]},
+  {name:"卫青",intro:"西汉名将",clues:["他是西汉人","他是著名将领","他大破匈奴","他出身卑微","他是汉武帝皇后卫子夫的弟弟"]},
+  {name:"文天祥",intro:"南宋抗元名臣",clues:["他是南宋人","他抗元被俘","他宁死不屈","他写《正气歌》","他被称为民族英雄"]},
+  {name:"戚继光",intro:"明代抗倭名将",clues:["他是明代人","他抗倭有功","他创建了戚家军","他著《纪效新书》","他被称为民族英雄"]},
+  {name:"郑成功",intro:"明末清初收复台湾",clues:["他是明末清初人","他收复了台湾","他抗清失败","他是国姓爷","他从荷兰人手中收复台湾"]},
+  {name:"张学良",intro:"民国将领，西安事变主角",clues:["他是民国时期人","他是奉系军阀首领之子","他发动了西安事变","他活了过百岁","他与杨虎城一起行动"]},
+  {name:"孙中山",intro:"中华民国国父，中国民主革命先驱",clues:["他是中国现代人","他是革命家","他被称为国父","他领导了辛亥革命","他创建了中华民国"]}
+];
 
-let sessionId = null;
-let ended = false;
+var person = null;
+var clueIndex = 0;
+var rounds = 0;
+var correct = false;
 
-function el(id) { return document.getElementById(id); }
-
-function addMsg(text, type) {
-  const chat = el('chat');
-  const div = document.createElement('div');
-  div.className = 'msg ' + type;
-  div.textContent = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+function getRating(r) {
+  if (r === 1) return "SSS 天才直觉";
+  if (r === 2) return "SS 学识渊博";
+  if (r === 3) return "S 聪明绝顶";
+  if (r <= 5) return "A 见多识广";
+  if (r <= 7) return "B 推理达人";
+  if (r <= 10) return "C 险中求胜";
+  return "D 再接再厉";
 }
 
-function setLoading(show) {
-  const existing = document.querySelector('.loading');
-  if (show) {
-    const div = document.createElement('div');
-    div.className = 'msg ai loading';
-    div.id = 'loadingEl';
-    div.textContent = '思考中';
-    el('chat').appendChild(div);
-    el('chat').scrollTop = el('chat').scrollHeight;
-  } else {
-    const el = document.getElementById('loadingEl');
-    if (el) el.remove();
-  }
-  el('sendBtn').disabled = show;
-  el('guessInput').disabled = show;
-}
-
-async function startGame() {
-  el('startScreen').style.display = 'none';
-  el('chat').innerHTML = '';
-  el('chat').classList.add('show');
-  el('inputArea').classList.add('show');
-  el('restartBtn').classList.remove('show');
-  ended = false;
-  sessionId = null;
-  addMsg('游戏即将开始，AI 正在想一个人…', 'system');
-  el('guessInput').focus();
-
-  setLoading(true);
-  try {
-    const resp = await fetch(API + '/new_game', { method: 'POST', headers: {'Content-Type':'application/json'} });
-    const data = await resp.json();
-    setLoading(false);
-    if (data.error) { addMsg('出错了: ' + data.error, 'system'); return; }
-    sessionId = data.session_id;
-    addMsg(data.reply, 'ai');
-  } catch(e) {
-    setLoading(false);
-    addMsg('网络错误，请检查连接: ' + e.message, 'system');
-  }
-}
-
-async function send() {
-  const input = el('guessInput');
-  const text = input.value.trim();
-  if (!text || !sessionId || ended) return;
-  input.value = '';
-  addMsg(text, 'user');
-
-  setLoading(true);
-  try {
-    const resp = await fetch(API + '/guess', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ session_id: sessionId, input: text })
-    });
-    const data = await resp.json();
-    setLoading(false);
-    if (data.error) { addMsg('出错了: ' + data.error, 'system'); return; }
-
-    addMsg(data.reply, 'ai');
-
-    if (data.is_revealed || data.is_correct) {
-      ended = true;
-      setLoading(false);
-      const rating = getRating(data.rounds);
-      addMsg('🎉 ' + rating + ' | 用时 ' + data.rounds + ' 轮', 'result');
-      el('restartBtn').classList.add('show');
+function fuzzyMatch(input, target) {
+  input = input.trim().toLowerCase().replace(/[^a-zA-Z\u4e00-\u9fa5]/g,"");
+  target = target.toLowerCase();
+  if (input === target) return true;
+  var aliases = {
+    "诸葛亮":["诸葛","孔明","卧龙"],
+    "刘邦":["刘季","汉高祖","汉高帝"],
+    "项羽":["项籍","西楚霸王"],
+    "曹操":["阿瞒","孟德"],
+    "关羽":["关公","云长","关帝"],
+    "张飞":["翼德"],
+    "周瑜":["公瑾"],
+    "刘备":["玄德"],
+    "孔子":["孔丘","仲尼"],
+    "孟子":["孟轲"],
+    "老子":["李耳","太上老君"],
+    "屈原":["正则","灵均"],
+    "王羲之":["逸少"],
+    "岳飞":["鹏举"],
+    "韩信":["兵仙","神帅"],
+    "张良":["子房"],
+    "扁鹊":["秦越人"],
+    "华佗":["元化"],
+    "李时珍":["濒湖","东壁"],
+    "张仲景":["医圣","南阳"],
+    "武则天":["武媚娘","则天"],
+    "成吉思汗":["铁木真"],
+    "孙中山":["中山","孙文","国父"]
+  };
+  var als = aliases[target];
+  if (als) {
+    for (var i = 0; i < als.length; i++) {
+      if (input.indexOf(als[i]) !== -1 || als[i].indexOf(input) !== -1) return true;
     }
-  } catch(e) {
-    setLoading(false);
-    addMsg('网络错误: ' + e.message, 'system');
+  }
+  if (target.indexOf(input) !== -1 || input.indexOf(target) !== -1) return true;
+  return false;
+}
+
+function startGame() {
+  person = PEOPLE[Math.floor(Math.random() * PEOPLE.length)];
+  clueIndex = 0;
+  rounds = 0;
+  correct = false;
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('gameArea').classList.add('show');
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('history').innerHTML = '';
+  document.getElementById('clueNum').textContent = '1';
+  document.getElementById('clueText').textContent = person.clues[0];
+  document.getElementById('guessInput').value = '';
+  document.getElementById('guessInput').focus();
+}
+
+function moreClue() {
+  if (clueIndex < person.clues.length - 1) {
+    clueIndex++;
+    rounds++;
+    document.getElementById('clueNum').textContent = String(clueIndex + 1);
+    document.getElementById('clueText').textContent = person.clues[clueIndex];
+    addHist('hint', '第' + (clueIndex+1) + '条线索：' + person.clues[clueIndex]);
+  } else {
+    addHist('hint', '已是最后一条线索！');
   }
 }
 
-function getRating(rounds) {
-  if (rounds === 1) return 'SSS 天才直觉';
-  if (rounds === 2) return 'SS 学识渊博';
-  if (rounds === 3) return 'S 聪明绝顶';
-  if (rounds <= 5) return 'A 见多识广';
-  if (rounds <= 7) return 'B 推理达人';
-  if (rounds <= 10) return 'C 险中求胜';
-  return 'D 再接再厉';
+function addHist(type, text) {
+  var el = document.createElement('div');
+  el.className = 'hist-item ' + type;
+  el.textContent = text;
+  var container = document.getElementById('history');
+  container.insertBefore(el, container.firstChild);
+}
+
+function sendGuess() {
+  var input = document.getElementById('guessInput').value.trim();
+  if (!input || correct) return;
+  document.getElementById('guessInput').value = '';
+
+  if (fuzzyMatch(input, person.name)) {
+    correct = true;
+    rounds++;
+    addHist('right', '正确！' + input);
+    showResult();
+    return;
+  }
+
+  var isYesNo = input.indexOf('是') !== -1 || input.indexOf('否') !== -1 || input.indexOf('吗') !== -1 || input.indexOf('?') !== -1;
+  rounds++;
+  var responses = ['方向有误，再想想', '不完全是，继续猜', '不是，继续努力', '不对，再换角度'];
+  var resp = responses[Math.floor(Math.random() * responses.length)];
+  addHist('wrong', input + '\n' + resp);
+
+  if (clueIndex < person.clues.length - 1 && rounds >= 5) {
+    moreClue();
+  }
+}
+
+function showResult() {
+  document.getElementById('gameArea').classList.remove('show');
+  var box = document.getElementById('resultBox');
+  box.classList.add('show');
+  document.getElementById('resultName').textContent = '答案：' + person.name;
+  document.getElementById('resultIntro').textContent = person.intro;
+  document.getElementById('resultRating').textContent = '用了 ' + rounds + ' 轮 | ' + getRating(rounds);
 }
 </script>
 </body>
